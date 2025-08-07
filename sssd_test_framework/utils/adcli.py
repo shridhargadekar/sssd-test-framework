@@ -30,7 +30,7 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
        kerberos based authentication.
     """
 
-    def info(self, domain: str, *, args: list[str] | None = None) -> ProcessResult:
+    def info(self, *, domain: str, args: list[str] | None = None) -> ProcessResult:
         """
         Discover AD domain.
 
@@ -44,14 +44,14 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
         if args is None:
             args = []
 
-        command = self.host.conn.exec(["adcli", "info", *args, "--verbose", f"{domain}"], raise_on_error=False)
+        command = self.host.conn.exec(["adcli", "info", *args, "--verbose", domain], raise_on_error=False)
 
         return command
 
     def testjoin(
         self,
-        domain: str,
         *,
+        domain: str,
         args: list[str] | None = None,
     ) -> ProcessResult:
         """
@@ -71,8 +71,8 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
 
     def join(
         self,
-        domain: str,
         *,
+        domain: str,
         args: list[str] | None = None,
         password: str,
         login_user: str,
@@ -111,8 +111,8 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
 
     def delete_computer(
         self,
-        domain: str,
         *,
+        domain: str,
         args: list[str] | None = None,
         password: str,
         login_user: str,
@@ -139,10 +139,27 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
 
         if krb:
             self.host.conn.exec(["kinit", f"{login_user}@{domain.upper()}"], input=password)
-            command = self.host.conn.exec(["adcli", "delete-computer", "--verbose", "-C", *args], raise_on_error=False)
+            command = self.host.conn.exec(
+                [
+                    "adcli",
+                    "delete-computer",
+                    "--verbose",
+                    "-C",
+                    f"--domain={domain}",
+                    *args,
+                ],
+                raise_on_error=False,
+            )
         else:
             command = self.host.conn.exec(
-                ["adcli", "delete-computer", "--stdin-password", "--verbose", *args],
+                [
+                    "adcli",
+                    "delete-computer",
+                    "--stdin-password",
+                    "--verbose",
+                    f"--domain={domain}",
+                    *args,
+                ],
                 input=password,
                 raise_on_error=False,
             )
@@ -151,8 +168,8 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
 
     def show_computer(
         self,
-        domain: str,
         *,
+        domain: str,
         password: str,
         args: list[str] | None = None,
         login_user: str,
@@ -201,8 +218,8 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
 
     def preset_computer(
         self,
-        domain: str,
         *,
+        domain: str,
         password: str,
         args: list[str] | None = None,
         login_user: str,
@@ -251,8 +268,8 @@ class AdcliUtils(MultihostUtility[MultihostHost]):
 
     def reset_computer(
         self,
-        domain: str,
         *,
+        domain: str,
         password: str,
         args: list[str] | None = None,
         login_user: str,
